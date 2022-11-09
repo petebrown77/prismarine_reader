@@ -6,17 +6,19 @@ const gzip = promisify(zlib.gzip)
 const { Vec3 } = require('vec3')
 const mcData = require('minecraft-data')
 
+const litematica = require('./lib/litematicaSchematic')
 const sponge = require('./lib/spongeSchematic')
 const mcedit = require('./lib/mceditSchematic')
 
 class Schematic {
-  constructor (version, size, offset, palette, blocks) {
+  constructor (version, size, offset, palette, blocks, entities=[]) {
     this.version = version
     this.size = size
     this.offset = offset
     this.palette = palette
     this.blocks = blocks
     this.Block = require('prismarine-block')(version)
+    this.entities = entities;
   }
 
   start () {
@@ -130,10 +132,16 @@ class Schematic {
 
   static async read (buffer, version = null) {
     const schem = nbt.simplify(await parseNbt(buffer))
-    try {
-      return sponge.read(schem, version)
-    } catch {
-      return mcedit.read(schem, version)
+
+    if (schem.Regions) {
+      console.log('Schematic is a litematica file')
+      return litematica.read(schem, version)
+    } else {
+      try {
+        return mcedit.read(schem, version)
+      } catch {
+        return sponge.read(schem, version)
+      }
     }
   }
 
