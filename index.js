@@ -263,4 +263,6 @@ class Schematic {
   }
 }
 
-module.exports = { Schematic }
+module.exports = {
+  Schematic
+}
